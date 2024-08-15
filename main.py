@@ -53,8 +53,8 @@ def parse_channel(data):
         "name": data['title']['simpleText'],
         "thumbnail": data['thumbnail']['thumbnails'][0]['url'],
         "description": data['descriptionSnippet']['runs'][0]['text'] if 'descriptionSnippet' in data else '',
-        "subscribers": int(data['subscriberCountText']['simpleText'].replace(' subscribers', '').replace(',', '')) if 'subscriberCountText' in data else 0,
-        "videos": int(data.get('videoCountText', {}).get('runs', [{}])[0].get('text', '-1').replace(',', '')) if 'videoCountText' in data else -1,
+        "subscribers": data['videoCountText']['simpleText'].replace(' subscribers', ''),
+        "videos": int(data.get('videoCountText'[0], {}).get('runs', [{}])[0].get('text', '-1').replace(',', '')) if 'videoCountText' in data else -1,
         "verified": 'ownerBadges' in data and any('VERIFIED' in badge['metadataBadgeRenderer']['style'] for badge in data['ownerBadges'])
     }
 
@@ -72,6 +72,7 @@ def get_suggestions(query):
     headers = {"User-Agent": user_agent.random}
     url = f'https://suggestqueries-clients6.youtube.com/complete/search?client=youtube&q={query}'
     response = requests.get(url, headers=headers, proxies=proxies)
+
     decoded_data = response.content.decode('utf-8')
 
     matched_suggestions_lists = re.search(r'\[\[".*\]\]', decoded_data)
