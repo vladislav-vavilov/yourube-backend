@@ -1,46 +1,26 @@
-import re
-import json
 from fake_useragent import UserAgent
 
 
-user_agent = UserAgent(platforms='pc')
-
-
-def get_initial_data(response):
-    '''Get initial data from the response html'''
-
-    initial_data_string = re.search(
-        r'var ytInitialData\s=\s(.*?);</script>', response.text)
-
-    if not initial_data_string:
-        raise Exception("Unable to find initial data in the response.")
-
-    initial_data = json.loads(initial_data_string.group(1))
-    return initial_data
-
-
-def get_context(response):
-    '''Get context from the response html'''
-
-    context_string = re.search(r'ytcfg\.set\((\{.*?\})\)', response.text)
-
-    if not context_string:
-        raise Exception("Unable to find context in the response.")
-
-    context = json.loads(context_string.group(1))['INNERTUBE_CONTEXT']
-
-    return context
+user_agent = UserAgent()
 
 
 def parse_items(items):
     results = []
     for item in items:
-        parsed_item = parse_item(item)
-
-        if parsed_item:
-            results.append(parsed_item)
+        results.append(parse_item(item))
 
     return results
+
+
+def parse_item(item):
+    '''Parse item depending on its type'''
+
+    if 'videoRenderer' in item:
+        return parse_video(item['videoRenderer'])
+    elif 'playlistRenderer' in item:
+        return parse_playlist(item['playlistRenderer'])
+    elif 'channelRenderer' in item:
+        return parse_channel(item['channelRenderer'])
 
 
 def parse_video(data):
@@ -92,30 +72,3 @@ def parse_channel(data):
         "videos": int(data.get('videoCountText'[0], {}).get('runs', [{}])[0].get('text', '-1').replace(',', '')) if 'videoCountText' in data else -1,
         "verified": 'ownerBadges' in data and any('VERIFIED' in badge['metadataBadgeRenderer']['style'] for badge in data['ownerBadges'])
     }
-
-
-def parse_playlist_video(data):
-    '''Parse playlist video data'''
-
-    return {
-        'url': f'/watch?v={data["videoId"]}',
-        'title': data['title']['runs'][0]['text'],
-        'thumbnail': data['thumbnail']['thumbnails'][0]['url'],
-        'uploaderName': data['shortBylineText']['runs'][0]['text'],
-        'views': data['videoInfo']['runs'][0]['text'].replace(' views', '').replace(',', '').replace('No', '0'),
-        'uploadedDate': data['videoInfo']['runs'][2]['text'],
-        'duration': data['lengthSeconds']
-    }
-
-
-def parse_item(item):
-    '''Parse item depending on its type'''
-
-    if 'videoRenderer' in item:
-        return parse_video(item['videoRenderer'])
-    elif 'playlistRenderer' in item:
-        return parse_playlist(item['playlistRenderer'])
-    elif 'channelRenderer' in item:
-        return parse_channel(item['channelRenderer'])
-    elif 'playlistVideoRenderer' in item:
-        return parse_playlist_video(item['playlistVideoRenderer'])
