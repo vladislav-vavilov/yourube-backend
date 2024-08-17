@@ -1,97 +1,46 @@
-import requests
+import re
 import json
-
-from config import BASE_URL
-from proxy import proxies
-from utils import encode, decode
-from common import user_agent, get_initial_data, get_context,  parse_items
+from fake_useragent import UserAgent
 
 
-filters = {
-    'type': {
-        'video': 'B',
-        'playlist': 'D',
-        'channel': 'C'
-    },
-    'sort': {
-        'relevance': 'CAAsAhA',
-        'date': 'CAISAhA',
-        'views': 'CAMSAhA',
-    },
-    'duration': {
-        'short': 'EgQQARgB',
-        'middle': 'EgQQARgD',
-        'long': 'EgQQARgC',
-    },
-    'date': {
-        'hour':  'EgIIAQ%253D%253D',
-        'today': 'EgQIAhAB',
-        'week':  'EgQIAxAB',
-        'month': 'EgQIBBAB',
-        'year':  'EgQIBRAB',
-    }
-}
+user_agent = UserAgent(platforms='pc')
 
 
-def get_search_results(query, nextpage=None):
-    '''Get first or subsequent pages of search results'''
+def get_initial_data(response):
+    '''Get initial data from the response html'''
 
-    try:
-        if nextpage:
-            context, token = nextpage.split('@')
-            return get_continuation_search_results(context=context, token=token)
-        else:
-            return get_initial_search_results(query)
-    except Exception as e:
-        print(f'Error: {e}')
+    initial_data_string = re.search(
+        r'var ytInitialData\s=\s(.*?);</script>', response.text)
 
+    if not initial_data_string:
+        raise Exception("Unable to find initial data in the response.")
 
-def get_initial_search_results(query):
-    '''Get first page of search results'''
-
-    headers = {"User-Agent": user_agent.random}
-    url = f"{BASE_URL}/results?search_query={query}"
-
-    response = requests.get(url, headers=headers, proxies=proxies)
-
-    try:
-        data = get_initial_data(response)
-        contents = data['contents']['twoColumnSearchResultsRenderer']['primaryContents']['sectionListRenderer']['contents']
-
-        continuation_token = get_continuation_token(contents[1])
-        search_results = parse_items(
-            contents[0]['itemSectionRenderer']['contents']
-        )
-        context = json.dumps(get_context(response))
-
-        return {'items': search_results, 'nextpage': f'{encode(context)}@{continuation_token}'}
-
-    except KeyError as e:
-        print(f"KeyError: {e} not found in the expected JSON structure.")
-        return []
+    initial_data = json.loads(initial_data_string.group(1))
+    return initial_data
 
 
-def get_continuation_search_results(context, token):
-    '''Get the next page of search results'''
+def get_context(response):
+    '''Get context from the response html'''
 
-    headers = {"User-Agent": user_agent.random}
-    url = f'{BASE_URL}/youtubei/v1/search'
+    context_string = re.search(r'ytcfg\.set\((\{.*?\})\)', response.text)
 
-    decoded_context = json.loads(decode(context))
-    data = json.dumps({"context": decoded_context, "continuation": token})
+    if not context_string:
+        raise Exception("Unable to find context in the response.")
 
-    response = requests.post(url, data=data, headers=headers, proxies=proxies)
-    response_json = response.json()
-    data = response_json['onResponseReceivedCommands'][0]['appendContinuationItemsAction']['continuationItems']
+    context = json.loads(context_string.group(1))['INNERTUBE_CONTEXT']
 
-    continuation_token = get_continuation_token(data)
-    search_results = parse_items(data[0]['itemSectionRenderer']['contents'])
-
-    return {'items': search_results, 'nextpage': f'{context}@{continuation_token}'}
+    return context
 
 
-def get_continuation_token(content):
-    return content['continuationItemRenderer']['continuationEndpoint']['continuationCommand']['token']
+def parse_items(items):
+    results = []
+    for item in items:
+        parsed_item = parse_item(item)
+
+        if parsed_item:
+            results.append(parsed_item)
+
+    return results
 
 
 def parse_video(data):
@@ -145,6 +94,20 @@ def parse_channel(data):
     }
 
 
+def parse_playlist_video(data):
+    '''Parse playlist video data'''
+
+    return {
+        'url': f'/watch?v={data["videoId"]}',
+        'title': data['title']['runs'][0]['text'],
+        'thumbnail': data['thumbnail']['thumbnails'][0]['url'],
+        'uploaderName': data['shortBylineText']['runs'][0]['text'],
+        'views': data['videoInfo']['runs'][0]['text'].replace(' views', '').replace(',', '').replace('No', '0'),
+        'uploadedDate': data['videoInfo']['runs'][2]['text'],
+        'duration': data['lengthSeconds']
+    }
+
+
 def parse_item(item):
     '''Parse item depending on its type'''
 
@@ -154,3 +117,5 @@ def parse_item(item):
         return parse_playlist(item['playlistRenderer'])
     elif 'channelRenderer' in item:
         return parse_channel(item['channelRenderer'])
+    elif 'playlistVideoRenderer' in item:
+        return parse_playlist_video(item['playlistVideoRenderer'])

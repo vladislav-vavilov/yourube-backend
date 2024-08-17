@@ -1,9 +1,5 @@
-from os import getenv
+from config import PROXY_HOST, PROXY_PORT, PROXY_USERNAME, PROXY_PASSWORD
 
-PROXY_HOST = '161.0.21.226'
-PROXY_PORT = '8000'
-PROXY_USERNAME = getenv('PROXY_USERNAME')
-PROXY_PASSWORD = getenv('PROXY_PASSWORD')
 
 proxies = {
     "http": f"http://{PROXY_USERNAME}:{PROXY_PASSWORD}@{PROXY_HOST}:{PROXY_PORT}",
