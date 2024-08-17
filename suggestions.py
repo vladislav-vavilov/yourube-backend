@@ -1,10 +1,8 @@
 import requests
 import json
 import re
-from fake_useragent import UserAgent
 from proxy import proxies
-
-user_agent = UserAgent(platforms='pc')
+from common import user_agent
 
 
 def get_suggestions(query):

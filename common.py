@@ -1,7 +1,7 @@
 from fake_useragent import UserAgent
 
 
-user_agent = UserAgent()
+user_agent = UserAgent(platforms='pc')
 
 
 def parse_items(items):
