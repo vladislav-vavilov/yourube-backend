@@ -3,7 +3,7 @@ import json
 
 from config import BASE_URL, context
 from proxy import proxies
-from common import user_agent, parse_items
+from common import parse_item, user_agent, parse_items
 
 
 def get_playlist(id=None, continuation=None):
@@ -23,7 +23,7 @@ def get_playlist(id=None, continuation=None):
         if id:
             return parse_playlist(response.json())
         elif continuation:
-            return parse_playlist_continuation(response.json())
+            return parse_more_playlist_videos(response.json())
 
     except Exception as e:
         print('Unable to get playlist:', e)
@@ -51,7 +51,7 @@ def parse_playlist(data):
     }
 
 
-def parse_playlist_continuation(data):
+def parse_more_playlist_videos(data):
     items = data['onResponseReceivedActions'][0]['appendContinuationItemsAction']['continuationItems']
 
     videos = parse_items(items)
@@ -67,4 +67,4 @@ def get_continuation(items):
     if 'continuationItemRenderer' not in items[-1]:
         return
 
-    return items[-1]['continuationItemRenderer']['continuationEndpoint']['continuationCommand']['token']
+    return parse_item(items[-1])
