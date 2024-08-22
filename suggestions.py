@@ -6,7 +6,7 @@ from common import user_agent
 
 
 def get_suggestions(query):
-    headers = {"User-Agent": user_agent.random}
+    headers = {'User-Agent': user_agent.random}
     url = f'https://suggestqueries-clients6.youtube.com/complete/search?client=youtube&q={query}'
     response = requests.get(url, headers=headers, proxies=proxies)
 

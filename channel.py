@@ -1,4 +1,3 @@
-from importlib.resources import contents
 import requests
 import json
 
@@ -31,7 +30,10 @@ def get_channel(id=None, continuation=None):
         response = requests.post(
             url, data=data, headers=headers, proxies=proxies)
 
-        return parse_channel(response.json())
+        if id:
+            return parse_channel(response.json())
+        elif continuation:
+            print(response.json())
     except Exception as e:
         print('Unable to get channel:', e)
 

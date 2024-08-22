@@ -8,7 +8,7 @@ from common import parse_item, user_agent, parse_items
 
 def get_playlist(id=None, continuation=None):
     try:
-        headers = {"User-Agent": user_agent.random}
+        headers = {'User-Agent': user_agent.random}
         url = f'{BASE_URL}/youtubei/v1/browse'
 
         data = json.dumps({

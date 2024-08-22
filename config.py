@@ -3,9 +3,9 @@ from os import getenv
 BASE_URL = 'https://www.youtube.com'
 
 context = {
-    "client": {
-        "clientName": "WEB",
-        "clientVersion": "2.2024081",
+    'client': {
+        'clientName': 'WEB',
+        'clientVersion': '2.2024081',
     },
 }
 

@@ -36,7 +36,7 @@ def get_search_results(query=None, continuation=None):
     '''Get first or subsequent pages of search results'''
 
     try:
-        headers = {"User-Agent": user_agent.random}
+        headers = {'User-Agent': user_agent.random}
         url = f'{BASE_URL}/youtubei/v1/search'
 
         data = json.dumps({
