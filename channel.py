@@ -33,14 +33,30 @@ def get_channel(id=None, continuation=None):
         if id:
             return parse_channel(response.json())
         elif continuation:
-            print(response.json())
+            return parse_more_channel_items(response.json())
     except Exception as e:
         print('Unable to get channel:', e)
 
 
-def parse_channel(data):
+def parse_channel_info(data):
     channel_info = data['header']['pageHeaderRenderer']['content']['pageHeaderViewModel']
     metadata = channel_info['metadata']['contentMetadataViewModel']['metadataRows']
+
+    return {
+        'title': channel_info['title']['dynamicTextViewModel']['text']['content'],
+        'avatar': channel_info['image']['decoratedAvatarViewModel']['avatar']['avatarViewModel']['image']['sources'][2]['url'],
+        'username': metadata[0]['metadataParts'][0]['text']['content'],
+        'subscribers': metadata[1]['metadataParts'][0]['text']['content'].replace(' subscribers', ''),
+        'videos': metadata[1]['metadataParts'][1]['text']['content'],
+        'description': channel_info['description']['descriptionPreviewViewModel']['description']['content'],
+        'banner': channel_info['banner']['imageBannerViewModel']['image']['sources'][2]['url'],
+    }
+
+
+def parse_channel(data):
+    '''Parse channel info and initial items with continuation token'''
+
+    channel_info = parse_channel_info(data)
 
     tabs = []
     items = []
@@ -51,32 +67,42 @@ def parse_channel(data):
             continue
 
         tab_info = tab['tabRenderer']
+        tab_title = tab_info['title']
 
-        if tab_info['title'] in ['Videos', 'Shorts']:
-            tabs.append(tab_info['title'])
+        if tab_title not in ['Videos', 'Shorts']:
+            continue
 
-            if 'content' in tab_info:
-                tab_items = tab_info['content']['richGridRenderer']['contents']
-                last_item = tab_items.pop()
+        tabs.append(tab_title)
 
-                continuation = parse_item(last_item)
-                items += parse_tab_items(tab_items)
+        if 'content' in tab_info:
+            tab_items = tab_info['content']['richGridRenderer']['contents']
+            last_item = tab_items.pop()
+
+            continuation = parse_item(last_item)
+            items = parse_items(tab_items)
+
+    data = {
+        'tabs': tabs,
+        'items': items,
+        'continuation': continuation
+    }
+
+    return channel_info | data
+
+
+def parse_more_channel_items(data):
+    '''Parse channel videos from continuation response json'''
+
+    items = data['onResponseReceivedActions'][0]['appendContinuationItemsAction']['continuationItems']
+    continuation = parse_item(items.pop())
 
     return {
-        'title': channel_info['title']['dynamicTextViewModel']['text']['content'],
-        'avatar': channel_info['image']['decoratedAvatarViewModel']['avatar']['avatarViewModel']['image']['sources'][2]['url'],
-        'username': metadata[0]['metadataParts'][0]['text']['content'],
-        'subscribers': metadata[1]['metadataParts'][0]['text']['content'].replace(' subscribers', ''),
-        'videos': metadata[1]['metadataParts'][1]['text']['content'],
-        'description': channel_info['description']['descriptionPreviewViewModel']['description']['content'],
-        'banner': channel_info['banner']['imageBannerViewModel']['image']['sources'][2]['url'],
-        'tabs': tabs,
-        'relatedStreams': items,
+        'items': parse_items(items),
         'continuation': continuation
     }
 
 
-def parse_tab_items(items):
+def parse_items(items):
     results = []
     for item in items:
         tab_item_content = item['richItemRenderer']['content']

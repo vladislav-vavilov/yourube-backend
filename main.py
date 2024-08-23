@@ -10,5 +10,5 @@ mock_token = '4qmFsgKrCBIYVUNqN2JTUVdscTJPNGxoR3hHbGw1U1VBGo4IOGdhRUJocUJCbnItQl
 
 if __name__ == '__main__':
     query = sys.argv[1]
-    results = get_channel(id=mock_id)
+    results = get_channel(continuation=mock_token)
     pprint(results)
