@@ -21,16 +21,19 @@ def parse_items(items):
 def parse_item(item):
     '''Parse item depending on its type'''
 
-    if 'videoRenderer' in item:
-        return parse_video_item(item['videoRenderer'])
-    elif 'playlistRenderer' in item:
-        return parse_playlist_item(item['playlistRenderer'])
-    elif 'channelRenderer' in item:
-        return parse_channel_item(item['channelRenderer'])
-    elif 'continuationItemRenderer' in item:
-        return parse_continuation_token(item['continuationItemRenderer'])
-    elif 'reelItemRenderer' in item:
-        pass
+    match list(item.keys())[0]:
+        case 'videoRenderer':
+            return parse_video_item(item['videoRenderer'])
+        case 'playlistVideoRenderer':
+            return parse_playlist_video_item(item['playlistVideoRenderer'])
+        case 'playlistRenderer':
+            return parse_playlist_item(item['playlistRenderer'])
+        case 'channelRenderer':
+            return parse_channel_item(item['channelRenderer'])
+        case 'continuationItemRenderer':
+            return parse_continuation_token(item['continuationItemRenderer'])
+        case 'reelItemRenderer':
+            pass
 
 
 def parse_video_item(data):
@@ -44,7 +47,7 @@ def parse_video_item(data):
         'uploadedDate': data.get('publishedTimeText', {}).get('simpleText', 'Unknown date'),
         'shortDescription': data['detailedMetadataSnippets'][0]['snippetText']['runs'][0]['text'] if 'detailedMetadataSnippets' in data else 'No description',
         'duration': data['lengthText']['simpleText'] if 'lengthText' in data else 'Unknown duration',
-        'views': int(data.get('viewCountText', {}).get('simpleText', '0 views').replace(' views', '').replace(',', '').replace('No', '0')),
+        'views': int(''.join(data.get('viewCountText', {}).get('simpleText', '0 views').replace(',', '').split()[:-1])),
         'uploaderVerified': 'ownerBadges' in data and any('VERIFIED' in badge['metadataBadgeRenderer']['style'] for badge in data['ownerBadges']),
         'isShort': 'isShort' in data
     }
@@ -61,6 +64,19 @@ def parse_video_item(data):
         return video_info | uploader_info
 
     return video_info
+
+
+def parse_playlist_video_item(data):
+    '''Parse playlist video data'''
+
+    return {
+        'url': f'/watch?v={data['videoId']}',
+        'title': data['title']['runs'][0]['text'],
+        'thumbnail': data['thumbnail']['thumbnails'][0]['url'],
+        'uploadedDate': data['videoInfo']['runs'][0]['text'],
+        'duration': data['lengthText']['simpleText'],
+        'views': data['videoInfo']['runs'][2]['text'],
+    }
 
 
 def parse_playlist_item(data):

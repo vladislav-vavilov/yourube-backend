@@ -47,13 +47,13 @@ def get_search_results(query=None, continuation=None):
         response = requests.post(
             url, data=data, headers=headers, proxies=proxies)
 
-        if query:
-            contents = response.json()['contents']['twoColumnSearchResultsRenderer']['primaryContents'][
-                'sectionListRenderer']['contents']
-            return parse_search_results(contents)
-        elif continuation:
+        if continuation:
             contents = response.json()[
                 'onResponseReceivedCommands'][0]['appendContinuationItemsAction']['continuationItems']
+            return parse_search_results(contents)
+        elif query:
+            contents = response.json()['contents']['twoColumnSearchResultsRenderer']['primaryContents'][
+                'sectionListRenderer']['contents']
             return parse_search_results(contents)
 
     except Exception as e:

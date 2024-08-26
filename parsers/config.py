@@ -6,6 +6,8 @@ context = {
     'client': {
         'clientName': 'WEB',
         'clientVersion': '2.2024081',
+        # 'hl': 'ru',
+        # 'gl': 'NO',
     },
 }
 

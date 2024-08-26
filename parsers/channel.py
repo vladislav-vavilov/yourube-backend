@@ -29,10 +29,10 @@ def get_channel(id=None, continuation=None):
         response = requests.post(
             url, data=data, headers=headers, proxies=proxies)
 
-        if id:
-            return parse_channel(response.json())
-        elif continuation:
+        if continuation:
             return parse_more_channel_items(response.json())
+        elif id:
+            return parse_channel(response.json())
     except Exception as e:
         print('Unable to get channel:', e)
 
