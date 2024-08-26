@@ -1,8 +1,7 @@
 import requests
 import json
 import re
-from proxy import proxies
-from common import user_agent
+from parsers.common import proxies, user_agent
 
 
 def get_suggestions(query):

@@ -1,9 +1,8 @@
 import requests
 import json
 
-from config import BASE_URL, context
-from proxy import proxies
-from common import parse_item, user_agent, parse_items
+from parsers.config import BASE_URL, context
+from parsers.common import proxies, user_agent, parse_item, parse_items
 
 
 def get_playlist(id=None, continuation=None):

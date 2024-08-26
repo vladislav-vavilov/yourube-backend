@@ -1,6 +1,4 @@
-from channel import get_channel
-from search_results import get_search_results
-from playlist import get_playlist
+from parsers.channel import get_channel
 from pprint import pprint
 import sys
 

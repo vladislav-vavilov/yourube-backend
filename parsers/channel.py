@@ -1,9 +1,8 @@
 import requests
 import json
 
-from config import BASE_URL, context
-from proxy import proxies
-from common import parse_item,  user_agent
+from parsers.config import BASE_URL, context
+from parsers.common import proxies, user_agent, parse_item
 
 channel_params = {
     'videos': 'EgZ2aWRlb3PyBgQKAjoA',

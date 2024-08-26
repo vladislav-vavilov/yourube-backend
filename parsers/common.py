@@ -1,7 +1,13 @@
 from fake_useragent import UserAgent
+from parsers.config import PROXY_HOST, PROXY_PORT, PROXY_USERNAME, PROXY_PASSWORD
 
 
 user_agent = UserAgent(platforms='pc')
+
+proxies = {
+    'http': f'http://{PROXY_USERNAME}:{PROXY_PASSWORD}@{PROXY_HOST}:{PROXY_PORT}',
+    'https': f'http://{PROXY_USERNAME}:{PROXY_PASSWORD}@{PROXY_HOST}:{PROXY_PORT}',
+}
 
 
 def parse_items(items):
@@ -16,18 +22,18 @@ def parse_item(item):
     '''Parse item depending on its type'''
 
     if 'videoRenderer' in item:
-        return parse_video(item['videoRenderer'])
+        return parse_video_item(item['videoRenderer'])
     elif 'playlistRenderer' in item:
-        return parse_playlist(item['playlistRenderer'])
+        return parse_playlist_item(item['playlistRenderer'])
     elif 'channelRenderer' in item:
-        return parse_channel(item['channelRenderer'])
+        return parse_channel_item(item['channelRenderer'])
     elif 'continuationItemRenderer' in item:
         return parse_continuation_token(item['continuationItemRenderer'])
     elif 'reelItemRenderer' in item:
         pass
 
 
-def parse_video(data):
+def parse_video_item(data):
     '''Parse video data'''
 
     video_info = {
@@ -57,7 +63,7 @@ def parse_video(data):
     return video_info
 
 
-def parse_playlist(data):
+def parse_playlist_item(data):
     '''Parse playlist data'''
 
     return {
@@ -73,7 +79,7 @@ def parse_playlist(data):
     }
 
 
-def parse_channel(data):
+def parse_channel_item(data):
     '''Parse channel data'''
 
     return {
@@ -88,7 +94,7 @@ def parse_channel(data):
     }
 
 
-def parse_reel(data):
+def parse_reel_item(data):
     return {
         'url': f'/shorts/{data['videoId']}',
         'type': 'shorts',
