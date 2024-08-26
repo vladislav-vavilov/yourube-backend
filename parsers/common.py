@@ -13,7 +13,10 @@ proxies = {
 def parse_items(items):
     results = []
     for item in items:
-        results.append(parse_item(item))
+        parsed_item = parse_item(item)
+
+        if parsed_item:
+            results.append(parsed_item)
 
     return results
 
@@ -122,3 +125,7 @@ def parse_reel_item(data):
 
 def parse_continuation_token(data):
     return data['continuationEndpoint']['continuationCommand']['token']
+
+
+def replace_image_base_url(image_url, new_base_url):
+    return new_base_url + '/'.join(image_url.split('/')[3:])
