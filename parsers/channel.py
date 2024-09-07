@@ -2,7 +2,7 @@ import requests
 import json
 
 from parsers.config import BASE_URL, context
-from parsers.common import proxies, user_agent, parse_item
+from parsers.common import random_proxy, user_agent, parse_item
 
 channel_params = {
     'videos': 'EgZ2aWRlb3PyBgQKAjoA',
@@ -27,7 +27,7 @@ def get_channel(id=None, continuation=None):
         })
 
         response = requests.post(
-            url, data=data, headers=headers, proxies=proxies)
+            url, data=data, headers=headers, proxies=random_proxy)
 
         if continuation:
             return parse_more_channel_items(response.json())

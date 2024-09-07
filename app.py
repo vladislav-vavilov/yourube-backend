@@ -3,14 +3,15 @@ from fastapi.responses import StreamingResponse
 from typing import Union
 from fastapi import FastAPI, HTTPException
 
-from parsers.images import get_image
+from parsers.image import get_image
 from parsers.suggestions import get_suggestions
 from parsers.search_results import get_search_results
 from parsers.playlist import get_playlist
 from parsers.channel import get_channel
+from parsers.video import get_video
+
 
 app = FastAPI()
-
 
 @app.get('/suggestions')
 def suggestions(q: Union[str, None] = None):
@@ -57,9 +58,17 @@ def channel(channel_id: str, continuation: Union[str, None] = None):
 
 
 @app.get('/images/{image_path:path}')
-def image(image_path: str):
+def stream_image(image_path: str):
     try:
-        image_stream = get_image(image_path)
-        return StreamingResponse(image_stream, media_type=f'image/jpeg')
+        image = get_image(image_path)
+        return StreamingResponse(image, media_type='image/jpeg')
+    except Exception as e:
+        return HTTPException(status_code=500, detail=str(e))
+
+@app.get('/videos/{video_id}')
+def stream_video(video_id: str):
+    try:
+        video = get_video(video_id)
+        return StreamingResponse(video, media_type='video/mp4')
     except Exception as e:
         return HTTPException(status_code=500, detail=str(e))

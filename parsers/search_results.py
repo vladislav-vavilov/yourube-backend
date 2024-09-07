@@ -2,7 +2,7 @@ import requests
 import json
 
 from parsers.config import BASE_URL, context
-from parsers.common import proxies, user_agent, parse_items
+from parsers.common import random_proxy, user_agent, parse_items
 
 
 filters = {
@@ -45,7 +45,7 @@ def get_search_results(query=None, continuation=None):
         })
 
         response = requests.post(
-            url, data=data, headers=headers, proxies=proxies)
+            url, data=data, headers=headers, proxies=random_proxy)
 
         if continuation:
             contents = response.json()[

@@ -1,14 +1,11 @@
 from fake_useragent import UserAgent
-from parsers.config import PROXY_HOST, PROXY_PORT, PROXY_USERNAME, PROXY_PASSWORD
+from parsers.config import proxies
+
+from random import randrange
 
 
 user_agent = UserAgent(platforms='pc')
-
-proxies = {
-    'http': f'http://{PROXY_USERNAME}:{PROXY_PASSWORD}@{PROXY_HOST}:{PROXY_PORT}',
-    'https': f'http://{PROXY_USERNAME}:{PROXY_PASSWORD}@{PROXY_HOST}:{PROXY_PORT}',
-}
-
+random_proxy = proxies[randrange(0, len(proxies))]
 
 def parse_items(items):
     results = []

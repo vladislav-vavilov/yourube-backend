@@ -2,10 +2,12 @@ import requests
 import json
 
 from parsers.config import BASE_URL, context
-from parsers.common import proxies, user_agent, parse_item, parse_items
+from parsers.common import random_proxy, user_agent, parse_item, parse_items
+
+from typing import Union
 
 
-def get_playlist(id=None, continuation=None):
+def get_playlist(id: Union[str, None] = None, continuation: Union[str, None] = None):
     try:
         headers = {'User-Agent': user_agent.random}
         url = f'{BASE_URL}/youtubei/v1/browse'
@@ -17,7 +19,7 @@ def get_playlist(id=None, continuation=None):
         })
 
         response = requests.post(
-            url, data=data, headers=headers, proxies=proxies)
+            url, data=data, headers=headers, proxies=random_proxy)
 
         if continuation:
             return parse_more_playlist_videos(response.json())
