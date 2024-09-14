@@ -13,6 +13,7 @@ from parsers.video import get_video
 
 app = FastAPI()
 
+
 @app.get('/suggestions')
 def suggestions(q: Union[str, None] = None):
     try:
@@ -65,10 +66,16 @@ def stream_image(image_path: str):
     except Exception as e:
         return HTTPException(status_code=500, detail=str(e))
 
+
 @app.get('/videos/{video_id}')
 def stream_video(video_id: str):
     try:
         video = get_video(video_id)
-        return StreamingResponse(video, media_type='video/mp4')
+        headers = {
+            'Content-length': video.headers['Content-Length'],
+            'Accept-Ranges': video.headers.get('Accept-Ranges', 'none'),
+        }
+
+        return StreamingResponse(video, media_type='video/mp4', headers=headers)
     except Exception as e:
         return HTTPException(status_code=500, detail=str(e))

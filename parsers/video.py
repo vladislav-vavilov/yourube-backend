@@ -10,6 +10,7 @@ headers = {
     'User-Agent': user_agent.random,
 }
 
+
 def get_video(video_id: str) -> requests.Response:
     yt = YouTube(f'{BASE_URL}/watch?v={video_id}', proxies=random_proxy)
     stream = yt.streams.get_highest_resolution()
@@ -17,6 +18,6 @@ def get_video(video_id: str) -> requests.Response:
     if not stream:
         raise Exception('Unable to extract stream url')
 
-    response = requests.get(url=stream.url, proxies=random_proxy, headers=headers, stream=True)
+    response = requests.get(
+        url=stream.url, proxies=random_proxy, headers=headers, stream=True)
     return response
-

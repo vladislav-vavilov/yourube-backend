@@ -20,4 +20,3 @@ def get_base_url(image_type: str):
             return 'yt3.ggpht.com'
 
     raise Exception('No base url for image was found')
-

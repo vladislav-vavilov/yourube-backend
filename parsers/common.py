@@ -7,6 +7,7 @@ from random import randrange
 user_agent = UserAgent(platforms='pc')
 random_proxy = proxies[randrange(0, len(proxies))]
 
+
 def parse_items(items):
     results = []
     for item in items:
