@@ -55,18 +55,24 @@ def get_search_results(query=None, continuation=None):
             contents = response.json()['contents']['twoColumnSearchResultsRenderer']['primaryContents'][
                 'sectionListRenderer']['contents']
             return parse_search_results(contents)
-
+    except requests.exceptions.RequestException as e:
+        print(f'Request error: {e}')
+    except KeyError as e:
+        print(f'Missing expected data in response: {e}')
     except Exception as e:
-        print('Unable to get search results:', e)
+        print(f'An unexpected error occurred: {e}')
 
 
 def parse_search_results(contents):
-    items = parse_items(contents[0]['itemSectionRenderer']['contents'])
+    try:
+        items = parse_items(contents[0]['itemSectionRenderer']['contents'])
 
-    return {
-        'items': items,
-        'continuation': get_continuation_token(contents[1])
-    }
+        return {
+            'items': items,
+            'continuation': get_continuation_token(contents[1])
+        }
+    except (KeyError, IndexError) as e:
+        print(f'Failed to parse search results: {e}')
 
 
 def get_continuation_token(content):

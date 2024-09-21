@@ -11,13 +11,19 @@ headers = {
 }
 
 
-def get_video(video_id: str) -> requests.Response:
-    yt = YouTube(f'{BASE_URL}/watch?v={video_id}', proxies=random_proxy)
-    stream = yt.streams.get_highest_resolution()
+def get_video(video_id: str):
+    try:
+        yt = YouTube(f'{BASE_URL}/watch?v={video_id}', proxies=random_proxy)
+        stream = yt.streams.get_highest_resolution()
 
-    if not stream:
-        raise Exception('Unable to extract stream url')
+        if not stream:
+            raise Exception('Unable to extract stream url')
 
-    response = requests.get(
-        url=stream.url, proxies=random_proxy, headers=headers, stream=True)
-    return response
+        response = requests.get(
+            url=stream.url, proxies=random_proxy, headers=headers, stream=True)
+
+        return response
+    except requests.exceptions.RequestException as e:
+        print(f'Request error: {e}')
+    except Exception as e:
+        print(f'An unexpected error occurred: {e}')

@@ -62,6 +62,10 @@ def channel(channel_id: str, continuation: Union[str, None] = None):
 def stream_image(image_path: str):
     try:
         image = get_image(image_path)
+
+        if not image:
+            return HTTPException(status_code=404, detail='Image was not found')
+
         return StreamingResponse(image, media_type='image/jpeg')
     except Exception as e:
         return HTTPException(status_code=500, detail=str(e))
@@ -71,6 +75,10 @@ def stream_image(image_path: str):
 def stream_video(video_id: str):
     try:
         video = get_video(video_id)
+
+        if not video:
+            return HTTPException(status_code=404, detail='Video was not found')
+
         headers = {
             'Content-length': video.headers['Content-Length'],
             'Accept-Ranges': video.headers.get('Accept-Ranges', 'none'),
